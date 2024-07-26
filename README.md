@@ -1,5 +1,5 @@
 ## Installation
-You can install the latest version of PsyMetricTools from GitHub with the help of the devtools package:
+You can use EGAnet Shiny App from Github using the following command :
 ```r
 if (!require("shiny")) {
   install.packages("shiny")
