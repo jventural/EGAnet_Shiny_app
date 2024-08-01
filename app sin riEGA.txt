@@ -55,6 +55,7 @@ apply_colors <- function(top_bar, side_bar, button_bg, button_border, tab_active
     }
   "
   
+  # Remplazar 'none' o NULL con transparent
   args <- list(top_bar, side_bar, button_bg, button_border, button_bg, tab_active_border, tab_active_border, upload_complete_bg, tab_active_border, tab_active_top, upload_complete_bg, toggle_button, notif_font_size, notif_border_color, notif_bg_color, notif_text_color)
   args <- lapply(args, function(x) if (is.null(x) || x == "none") "transparent" else x)
   
@@ -63,19 +64,20 @@ apply_colors <- function(top_bar, side_bar, button_bg, button_border, tab_active
   return(css)
 }
 
+# Aplicar los colores usando la función
 css <- apply_colors(
   top_bar = "#899DA4",
   side_bar = "#899DA4",
   button_bg = "#DC863B",
   button_border = "#DC863B",
   tab_active_border = NULL,
-  tab_active_top = "#DC863B",
+  tab_active_top = "#DC863B", # Usar NULL para no aplicar color
   upload_complete_bg = "#5D6D7E",
-  toggle_button = "#899DA4",
-  notif_font_size = "16px",
-  notif_border_color = NULL,
-  notif_bg_color = "#DC863B",
-  notif_text_color = "#F9F9F9"
+  toggle_button = "#899DA4", # Color para el toggle button
+  notif_font_size = "16px",  # Tamaño de fuente para la notificación
+  notif_border_color = NULL,  # Color del borde de la notificación
+  notif_bg_color = "#DC863B",  # Color de fondo de la notificación
+  notif_text_color = "#F9F9F9"  # Color del texto de la notificación
 )
 
 ui <- dashboardPage(
@@ -186,29 +188,6 @@ ui <- dashboardPage(
                  )
                )
       ),
-      tabPanel("Wording effects",
-               fluidRow(
-                 column(8,
-                        div(id = "wordingEffectsPlotContainer",
-                            conditionalPanel(
-                              condition = "output.wordingEffectsError !== null",
-                              textOutput("wordingEffectsError")
-                            ),
-                            plotOutput("plotWordingEffects", width = "800px", height = "600px")
-                        )
-                 ),
-                 column(4,
-                        actionButton("toggleSettingsWordingEffects", "Show/Hide Plot Options"),
-                        div(id = "plotSettingsWordingEffects", style = "display: none;", 
-                            numericInput("widthWordingEffects", "Plot width (inches):", value = 8, min = 1, step = 1),
-                            numericInput("heightWordingEffects", "Plot height (inches):", value = 8, min = 1, step = 1),
-                            numericInput("dpiWordingEffects", "Plot resolution (dpi):", value = 600, min = 100, step = 100)
-                        ),
-                        actionButton("runWordingEffects", "Run Wording Effects", class = "btn btn-primary btn-calcular"),
-                        downloadButton("downloadWordingEffectsPlot", "Download Wording Effects Plot")
-                 )
-               )
-      ),
       tabPanel("Redundancy Analysis: UVA", 
                textOutput("uvaSummary")
       ),
@@ -251,8 +230,10 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$file, {
+    # Reset inputs related to the previous file upload
     updateSelectizeInput(session, "removeItemsManual", choices = NULL)
     updateSelectInput(session, "groupColumn", choices = NULL, selected = NULL)
+    # Reset other inputs
     updateSelectInput(session, "corr", selected = "cor_auto")
     updateSelectInput(session, "model", selected = "glasso")
     updateSelectInput(session, "algorithm", selected = "louvain")
@@ -264,14 +245,6 @@ server <- function(input, output, session) {
     updateSelectInput(session, "p_type", selected = "p_BH")
     updateNumericInput(session, "p_value", value = 0.05)
     updateNumericInput(session, "configural_threshold", value = 0.70)
-    
-    # Clear the plots and error messages
-    output$plotWordingEffects <- renderPlot(NULL)
-    output$wordingEffectsError <- renderText(NULL)
-    output$plotBootEGA <- renderPlot(NULL)
-    output$structuralConsistency <- renderTable(NULL)
-    output$invarianceResults <- renderPlot(NULL)
-    output$invarianceTable <- renderTable(NULL)
   })
   
   filtered_data <- reactive({
@@ -283,13 +256,13 @@ server <- function(input, output, session) {
       }
       data
     } else {
-      data_bfi()
+      data_bfi()  # Return the original data if groupColumn is not valid
     }
   })
   
   ega_result <- reactive({
     req(filtered_data())
-    ncores <- min(parallel::detectCores(logical = FALSE), 2)
+    ncores <- min(parallel::detectCores(logical = FALSE), 2)  # Detect available cores, limit to 2 to avoid overloading
     
     tryCatch({
       if (input$algorithm == "leiden") {
@@ -317,7 +290,7 @@ server <- function(input, output, session) {
       }
     }, error = function(e) {
       showNotification(paste("Error in running EGA:", e$message), type = "error")
-      NULL
+      NULL  # Return NULL in case of error
     })
   })
   
@@ -368,7 +341,7 @@ server <- function(input, output, session) {
       need(input$iter > 0, "Number of iterations must be greater than 0")
     )
     
-    ncores <- min(parallel::detectCores(logical = FALSE), 2)
+    ncores <- min(parallel::detectCores(logical = FALSE), 2)  # Detect available cores, limit to 2 to avoid overloading
     
     tryCatch({
       boot.wmt <- bootEGA(
@@ -433,7 +406,7 @@ server <- function(input, output, session) {
       }
       group_column <- data_bfi()[[input$groupColumn]]
       
-      ncores <- min(parallel::detectCores(logical = FALSE), 2)
+      ncores <- min(parallel::detectCores(logical = FALSE), 2)  # Detect available cores, limit to 2 to avoid overloading
       
       tryCatch({
         invariance.result <- invariance(
@@ -447,7 +420,7 @@ server <- function(input, output, session) {
           p_value = input$p_value,
           seed = as.numeric(input$seed),
           configural.threshold = as.numeric(input$configural_threshold),
-          ncores = ncores
+          ncores = ncores  # Use detected number of cores
         )
         
         output$invarianceResults <- renderPlot({
@@ -519,7 +492,7 @@ server <- function(input, output, session) {
       })
       return(NULL)
     }
-    output$hierEGAError <- renderText({ NULL })
+    output$hierEGAError <- renderText({ NULL }) # Clear the error message if the plot is not NULL
     plot <- result$plot.hierEGA + theme(plot.margin = unit(c(1,1,1,1), "cm")) +
       annotate("text", x = Inf, y = -Inf, label = paste("GenTEFI:", round(result$TEFI, 3)), hjust = 1, vjust = 0)
     print(plot + ggtitle("Hierarchical EGA Plot"))
@@ -539,56 +512,7 @@ server <- function(input, output, session) {
     }
   )
   
-  wording_effects_result <- reactive({
-    req(filtered_data())
-    ncores <- min(parallel::detectCores(logical = FALSE), 2)
-    
-    tryCatch({
-      riEGA(
-        data = filtered_data(),
-        corr = input$corr,
-        model = input$model,
-        algorithm = input$algorithm,
-        plot.EGA = TRUE,
-        seed = input$seed,
-        ncores = ncores
-      )
-    }, error = function(e) {
-      showNotification(paste("Error in running riEGA:", e$message), type = "error")
-      NULL
-    })
-  })
-  
-  observeEvent(input$runWordingEffects, {
-    result <- wording_effects_result()
-    if (is.null(result$Plot.EGA)) {
-      output$wordingEffectsError <- renderText({
-        "It is not possible to generate a wording effects model based on the provided dataset."
-      })
-      return(NULL)
-    }
-    output$wordingEffectsError <- renderText({ NULL })
-    output$plotWordingEffects <- renderPlot({
-      plot <- result$Plot.EGA + theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-        annotate("text", x = Inf, y = -Inf, label = paste("TEFI:", round(result$TEFI, 3)), hjust = 1, vjust = -1)
-      print(plot + ggtitle("Wording Effects EGA Plot"))
-    }, width = 600, height = 600, res = 100)
-    
-    output$downloadWordingEffectsPlot <- downloadHandler(
-      filename = function() { "wording_effects_plot.png" },
-      content = function(file) {
-        plot <- result$Plot.EGA + 
-          theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-          annotate("text", x = Inf, y = -Inf, label = paste("TEFI:", round(result$TEFI, 3)), hjust = 1, vjust = -1)
-        ggsave(file, plot = plot, width = input$widthWordingEffects, height = input$heightWordingEffects, dpi = input$dpiWordingEffects)
-      }
-    )
-  })
-  
-  observeEvent(input$toggleSettingsWordingEffects, {
-    toggle("plotSettingsWordingEffects")
-  })
-  
+  # Toggle plot settings visibility
   observeEvent(input$toggleSettings, {
     toggle("plotSettingsEGA")
   })
