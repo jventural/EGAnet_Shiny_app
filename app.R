@@ -79,7 +79,7 @@ css <- apply_colors(
 )
 
 ui <- dashboardPage(
-  dashboardHeader(title = "EGAnet Shiny"),
+  dashboardHeader(title = "EGAshiny"),
   dashboardSidebar(
     tags$head(
       tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Roboto:wght@400;700&display=swap"),
@@ -223,7 +223,7 @@ ui <- dashboardPage(
                    tags$strong("Reference"),
                    br(),
                    "Ventura-León, J., Lino-Cruz, C., Tocto-Muñoz, S., & Sanchez-Villena, A. (2024). ",
-                   tags$em("EGAnet Shiny"), 
+                   tags$em("EGAshiny"), 
                    " [Shiny Web Application]. Retrieved from ",
                    tags$a(href="https://jventural.shinyapps.io/EGAnet_Shiny/", "https://jventural.shinyapps.io/EGAnet_Shiny/")
                  )
