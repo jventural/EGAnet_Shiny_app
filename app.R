@@ -111,7 +111,14 @@ ui <- dashboardPage(
                  column(8,
                         div(class = "plot-table-container",
                             plotOutput("plotEGA", width = "800px", height = "600px"),
-                            tableOutput("networkLoads")
+                            fluidRow(
+                              column(6, 
+                                     h4("Network Loadings"),  # Título encima de la tabla de cargas de red
+                                     tableOutput("networkLoads")),    
+                              column(6, 
+                                     h4("Informative Table"), # Título encima de la tabla informativa
+                                     tableOutput("informativeTable")) 
+                            )
                         )
                  ),
                  column(4,
@@ -122,7 +129,8 @@ ui <- dashboardPage(
                             numericInput("dpiEGA", "Plot resolution (dpi):", value = 600, min = 100, step = 100)
                         ),
                         downloadButton("downloadEGAPlot", "Download EGA Plot", class = "plot-download-container"),
-                        downloadButton("downloadNetworkLoads", "Download Network Loads", class = "plot-download-container")
+                        downloadButton("downloadNetworkLoads", "Download Network Loads", class = "plot-download-container"),
+                        downloadButton("downloadInformativeTable", "Download informative table", class = "plot-download-container") # Botón con nuevo nombre
                  )
                )
       ),
@@ -336,6 +344,49 @@ server <- function(input, output, session) {
       as.data.frame() %>% 
       rownames_to_column(var = "Item")
   })
+  
+  # Función para convertir resultados EGA en data.frame y redondear decimales
+  convert_EGA_to_df <- function(ega_result) {
+    network_matrix <- ega_result$network
+    methods <- attr(network_matrix, "methods")
+    
+    # Crear lista de métricas asegurando que los valores son convertibles a caracteres o números según corresponda
+    metrics <- list(
+      Model = if (!is.null(methods$model)) toupper(methods$model) else NA,
+      Correlations = if (!is.null(methods$corr)) methods$corr else NA,
+      Lambda = if (!is.null(methods$lambda)) formatC(methods$lambda, format = "f", digits = 3) else NA,
+      `Number of nodes` = if (!is.null(nrow(network_matrix))) as.character(nrow(network_matrix)) else NA,
+      `Number of edges` = if (!is.null(sum(network_matrix != 0, na.rm = TRUE))) as.character(sum(network_matrix != 0, na.rm = TRUE) / 2) else NA, # Dividido por 2 para evitar duplicados
+      `Edge density` = if (!is.null(mean(network_matrix != 0, na.rm = TRUE))) formatC(mean(network_matrix != 0, na.rm = TRUE), format = "f", digits = 3) else NA,
+      M = if (!is.null(mean(network_matrix[network_matrix != 0], na.rm = TRUE))) formatC(mean(network_matrix[network_matrix != 0], na.rm = TRUE), format = "f", digits = 3) else NA,
+      SD = if (!is.null(sd(network_matrix[network_matrix != 0], na.rm = TRUE))) formatC(sd(network_matrix[network_matrix != 0], na.rm = TRUE), format = "f", digits = 3) else NA,
+      Min = if (!is.null(min(network_matrix[network_matrix != 0], na.rm = TRUE))) formatC(min(network_matrix[network_matrix != 0], na.rm = TRUE), format = "f", digits = 3) else NA,
+      Max = if (!is.null(max(network_matrix[network_matrix != 0], na.rm = TRUE))) formatC(max(network_matrix[network_matrix != 0], na.rm = TRUE), format = "f", digits = 3) else NA,
+      `Number of communities` = if (!is.null(ega_result$n.dim)) as.character(ega_result$n.dim) else NA,
+      TEFI = if (!is.null(ega_result$TEFI)) formatC(ega_result$TEFI, format = "f", digits = 3) else NA
+    )
+    
+    # Convertir la lista en data.frame
+    result_df <- data.frame(Index = names(metrics), Value = unlist(metrics), stringsAsFactors = FALSE, row.names = NULL)
+    
+    return(result_df)
+  }
+  
+  output$informativeTable <- renderTable({
+    result <- ega_result()
+    validate(need(!is.null(result), "Error in EGA result"))
+    convert_EGA_to_df(result)
+  })
+  
+  output$downloadInformativeTable <- downloadHandler(
+    filename = function() { "informative_table.xlsx" },
+    content = function(file) {
+      result <- ega_result()
+      validate(need(!is.null(result), "Error in EGA result"))
+      informative_table <- convert_EGA_to_df(result)
+      write.xlsx(informative_table, file)
+    }
+  )
   
   output$downloadEGAPlot <- downloadHandler(
     filename = function() { "EGA_plot.png" },
