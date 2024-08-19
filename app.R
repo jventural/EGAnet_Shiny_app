@@ -231,8 +231,8 @@ ui <- dashboardPage(
                    tags$strong("Reference"),
                    br(),
                    "Ventura-León, J., Lino-Cruz, C., Tocto-Muñoz, S., & Sanchez-Villena, A. (2024). ",
-                   tags$em("EGAnet Shiny"), 
-                   " [Shiny Web Application]. Retrieved from ",
+                   tags$em("EGAnet Shiny: An Interactive Shiny App for Exploratory Graph Analysis"), 
+                   " [Shiny Application]. Retrieved from ",
                    tags$a(href="https://jventural.shinyapps.io/EGAnet_Shiny/", "https://jventural.shinyapps.io/EGAnet_Shiny/")
                  )
                )
