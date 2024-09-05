@@ -220,23 +220,23 @@ ui <- dashboardPage(
       tabPanel("Redundancy Analysis: UVA", 
                textOutput("uvaSummary")
       ),
-      tabPanel("Information", 
-               tags$div(
-                 tags$p("This Shiny app was created by Dr. José Ventura-León and his research team."),
-                 tags$p("For more information about the author, visit: ", 
-                        tags$a(href="http://joseventuraleon.com", "joseventuraleon.com")),
-                 tags$p("For questions, inquiries, or errors in the calculator, write to ", 
-                        tags$a(href="mailto:info@joseventuraleon.com", "info@joseventuraleon.com")),
-                 tags$p(
-                   tags$strong("Reference"),
-                   br(),
-                   "Ventura-León, J., Lino-Cruz, C., Tocto-Muñoz, S., & Sanchez-Villena, A. (2024). ",
-                   tags$em("EGAnet Shiny: An Interactive Shiny App for Exploratory Graph Analysis"), 
-                   " [Shiny Application]. Retrieved from ",
-                   tags$a(href="https://jventural.shinyapps.io/EGAnet_Shiny/", "https://jventural.shinyapps.io/EGAnet_Shiny/")
-                 )
-               )
-      )
+      # tabPanel("Information", 
+      #          tags$div(
+      #            tags$p("This Shiny app was created by Dr. José Ventura-León and his research team."),
+      #            tags$p("For more information about the author, visit: ", 
+      #                   tags$a(href="http://joseventuraleon.com", "joseventuraleon.com")),
+      #            tags$p("For questions, inquiries, or errors in the calculator, write to ", 
+      #                   tags$a(href="mailto:info@joseventuraleon.com", "info@joseventuraleon.com")),
+      #            tags$p(
+      #              tags$strong("Reference"),
+      #              br(),
+      #              "Ventura-León, J., Lino-Cruz, C., Tocto-Muñoz, S., & Sanchez-Villena, A. (2024). ",
+      #              tags$em("EGAnet Shiny: An Interactive Shiny App for Exploratory Graph Analysis"), 
+      #              " [Shiny Application]. Retrieved from ",
+      #              tags$a(href="https://jventural.shinyapps.io/EGAnet_Shiny/", "https://jventural.shinyapps.io/EGAnet_Shiny/")
+      #            )
+      #          )
+      # )
     )
   )
 )
